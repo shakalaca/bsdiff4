@@ -56,6 +56,11 @@ class TestFormat(unittest.TestCase):
         dst2 = patch(src, p)
         self.assertEqual(dst, dst2)
 
+        p = diff(src, dst, True)
+        #print(len(src), len(p))
+        dst2 = patch(src, p, True)
+        self.assertEqual(dst, dst2)
+
     def test_zero(self):
         self.round_trip(b'', b'')
 
@@ -112,6 +117,16 @@ class TestFile(unittest.TestCase):
         file_patch(self.path('src'), self.path('src'), self.path('patch'))
         self.assert_same_file_content('src', 'dst')
 
+        # write file 'patch'
+        file_diff(self.path('src'), self.path('dst'), self.path('patch'), True)
+        # write file 'dst2'
+        file_patch(self.path('src'), self.path('dst2'), self.path('patch'), True)
+        # compare files 'dst' and 'dst2'
+        self.assert_same_file_content('dst', 'dst2')
+        # patch 'src' in place
+        file_patch(self.path('src'), self.path('src'), self.path('patch'), True)
+        self.assert_same_file_content('src', 'dst')
+
     def write_data(self, fn, data):
         with open(self.path(fn), 'wb') as fo:
             fo.write(data)
@@ -136,6 +151,10 @@ class TestFile(unittest.TestCase):
         self.write_data('dst', a + os.urandom(100) + b)
         file_diff(self.path('src'), self.path('dst'), self.path('patch'))
         file_patch_inplace(self.path('src'), self.path('patch'))
+        self.assert_same_file_content('src', 'dst')
+
+        file_diff(self.path('src'), self.path('dst'), self.path('patch'), True)
+        file_patch_inplace(self.path('src'), self.path('patch'), True)
         self.assert_same_file_content('src', 'dst')
 
 
