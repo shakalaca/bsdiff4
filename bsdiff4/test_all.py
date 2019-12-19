@@ -58,7 +58,7 @@ class TestFormat(unittest.TestCase):
 
         p = diff(src, dst, True)
         #print(len(src), len(p))
-        dst2 = patch(src, p, True)
+        dst2 = patch(src, p)
         self.assertEqual(dst, dst2)
 
     def test_zero(self):
@@ -120,11 +120,11 @@ class TestFile(unittest.TestCase):
         # write file 'patch'
         file_diff(self.path('src'), self.path('dst'), self.path('patch'), True)
         # write file 'dst2'
-        file_patch(self.path('src'), self.path('dst2'), self.path('patch'), True)
+        file_patch(self.path('src'), self.path('dst2'), self.path('patch'))
         # compare files 'dst' and 'dst2'
         self.assert_same_file_content('dst', 'dst2')
         # patch 'src' in place
-        file_patch(self.path('src'), self.path('src'), self.path('patch'), True)
+        file_patch(self.path('src'), self.path('src'), self.path('patch'))
         self.assert_same_file_content('src', 'dst')
 
     def write_data(self, fn, data):
@@ -154,7 +154,7 @@ class TestFile(unittest.TestCase):
         self.assert_same_file_content('src', 'dst')
 
         file_diff(self.path('src'), self.path('dst'), self.path('patch'), True)
-        file_patch_inplace(self.path('src'), self.path('patch'), True)
+        file_patch_inplace(self.path('src'), self.path('patch'))
         self.assert_same_file_content('src', 'dst')
 
 

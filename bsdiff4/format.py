@@ -46,15 +46,14 @@ def write_patch(fo, len_dst, tcontrol, bdiff, bextra, use_brotli=False):
     fo.write(bextra)
 
 
-def read_patch(fi, use_brotli=False, header_only=False):
+def read_patch(fi, header_only=False):
     """read a BSDIFF4-format patch from stream 'fi'
     """
     magic = fi.read(8)
     dcontrol_brotli = False
     ddiff_brotli = False
     dextra_brotli = False
-    if use_brotli:
-        assert magic[:4] == MAGIC_BSDF2[:4]
+    if magic[:4] == MAGIC_BSDF2[:4]:
         dcontrol_brotli = magic[5] == 2
         ddiff_brotli = magic[6] == 2
         dextra_brotli = magic[7] == 2
@@ -115,15 +114,15 @@ def file_diff(src_path, dst_path, patch_path, use_brotli=False):
         write_patch(fo, len(dst), *core.diff(src, dst), use_brotli)
 
 
-def patch(src_bytes, patch_bytes, use_brotli=False):
+def patch(src_bytes, patch_bytes):
     """patch(src_bytes, patch_bytes) -> bytes
 
     Apply the BSDIFF4-format patch_bytes to src_bytes and return the bytes.
     """
-    return core.patch(src_bytes, *read_patch(BytesIO(patch_bytes), use_brotli))
+    return core.patch(src_bytes, *read_patch(BytesIO(patch_bytes)))
 
 
-def file_patch_inplace(path, patch_path, use_brotli=False):
+def file_patch_inplace(path, patch_path):
     """file_patch_inplace(path, patch_path)
 
     Apply the BSDIFF4-format file patch_path to the file 'path' in place.
@@ -132,11 +131,11 @@ def file_patch_inplace(path, patch_path, use_brotli=False):
         with open(path, 'r+b') as fo:
             data = fo.read()
             fo.seek(0)
-            fo.write(core.patch(data, *read_patch(fi, use_brotli)))
+            fo.write(core.patch(data, *read_patch(fi)))
             fo.truncate()
 
 
-def file_patch(src_path, dst_path, patch_path, use_brotli=False):
+def file_patch(src_path, dst_path, patch_path):
     """file_patch(src_path, dst_path, patch_path)
 
     Apply the BSDIFF4-format file patch_path to the file src_path and
@@ -145,9 +144,9 @@ def file_patch(src_path, dst_path, patch_path, use_brotli=False):
     from os.path import abspath
 
     if abspath(dst_path) == abspath(src_path):
-        file_patch_inplace(src_path, patch_path, use_brotli)
+        file_patch_inplace(src_path, patch_path)
         return
 
     with open(patch_path, 'rb') as fi:
         with open(dst_path, 'wb') as fo:
-            fo.write(core.patch(read_data(src_path), *read_patch(fi, use_brotli)))
+            fo.write(core.patch(read_data(src_path), *read_patch(fi)))
